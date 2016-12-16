@@ -1,0 +1,5 @@
+Present a maritime operator with information related to where they can safely operate their ship realtive to the existence to sea-ice.
+
+Software Goals:
+1. Backend Server that would Allow an Ice-Experts/Scientists to provide relevant sea-ice map data to a maritime operator
+2. Maritime operator can utilize the sea-ice maps, easily, to aid in decision making in routing.
