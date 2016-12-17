@@ -31,6 +31,7 @@
 <script>
     // Create a World Window for the canvas.
     var wwd = new WorldWind.WorldWindow("canvasOne");
+		var polygonObject = {};
 
     // Register an event listener to be called when the page is loaded.
     window.addEventListener("load", eventWindowLoaded, false);
@@ -44,7 +45,11 @@
     var polygonsLayer = new WorldWind.RenderableLayer();
     polygonsLayer.displayName = "Polygons";
     wwd.addLayer(polygonsLayer);
-
+    var polygon;
+	var	latlon = []
+	polygonObject.latlon = latlon;
+	var dangerous;
+	polygonObject.dangerous;	
     //TODO
 
 
@@ -56,10 +61,10 @@
         {
             drawPolygons();
         }
-        else if (e.keyCode == "99")
-        {
-            exportPolygons();
-        }
+        //else if (e.keyCode == "99")
+       // {
+       //     exportPolygons();
+       // }
         else if (e.keyCode == "105")
         {
             toggleIceLevel();
@@ -91,13 +96,24 @@
             // Create a new polygon
             var boundaries = [];
             boundaries[0] = [];
+			polygonObject = {};
+			polygonObject.latlon = [];
+			polygonObject.dangerous;
             for (var i = 0; i < points.length; i++)
             {
                 boundaries[0].push(new WorldWind.Position(points[i].latitude,
                      points[i].longitude, 1e5));
+				var latitude = points[i].latitude;
+				var longitude = points[i].longitude;
+				var point = {
+					"latitude": latitude,
+					"longitude": longitude
+				}
+				polygonObject.latlon.push(point);
+				console.log("latitude: " + points[i].latitude + "longitude: " + points[i].longitude);
             }
 
-            var polygon = new WorldWind.Polygon(boundaries, null);
+            polygon = new WorldWind.Polygon(boundaries, null);
             polygon.altitudeMode = WorldWind.ABSOLUTE;
             polygon.extrude = true; // extrude the polygon edges to the ground
 
@@ -110,11 +126,16 @@
             {
                 polygonAttributes.outlineColor = WorldWind.Color.YELLOW;
                 polygonAttributes.interiorColor = new WorldWind.Color(1, 1, 0, 0.5);
-            }
+				dangerous = {"dangerous" : false}
+				polygonObject.dangerous = dangerous;
+			}
             else
             {
                 polygonAttributes.outlineColor = WorldWind.Color.RED;
                 polygonAttributes.interiorColor = new WorldWind.Color(1, 0, 0, 0.5);
+				dangerous = {"dangerous" : true}
+				polygonObject.dangerous = dangerous;
+				console.log("severe");
             }
 
             polygonAttributes.drawVerticals = polygon.extrude;
@@ -133,6 +154,7 @@
             // Add polygon to array
             polygons.push(polygon);
 
+			exportPolygons();
             // Clear points array and points from layer
             points = [];
         }
@@ -140,19 +162,50 @@
 
     function exportPolygons()
     {
-        if (points.length != 0)
-        {
-            window.alert("You are still drawing a polygon. Finish it before exporting.");
-        }
-        else if (polygons.length == 0)
-        {
-            window.alert("You must enter at least one shape before exporting.");
-        }
-        else
-        {
             window.alert("We are ready for export.");
-        }
+			var jsondata;
+			//createJSON(polygons[0]);
+			var data = JSON.stringify(polygonObject);
+			console.log(data);
+
+			var xhr = new XMLHttpRequest();
+			//TODO
+			//xhr.open("POST", "http://localhost/arcticsundog/Server/index.php", !0);
+			xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+			xhr.send(data);
+			xhr.onreadystatechange = function () {
+			if (xhr.readyState === 4 && xhr.status === 200) {
+				//in case we reply back from server
+				jsondata = JSON.parse(xhr.responseText);
+				console.log(jsondata);
+			}
+			}
     }
+	
+	function createJSON(polygon) {
+		var	points = []
+		polygonObject.points = points;
+		console.log(polygonObject);
+
+		var dangerous;
+		polygonObject.dangerous;
+		//if (polygon.polygonAttributes.outlineColor == WorldWind.Color.RED)
+		//{
+			dangerous = {"dangerous" : true}
+		//}
+		for(i=0; i<polygon.size(); i++)
+		{
+			var latitude = polygon.latitude;
+			var longitude = polygon.longitude;
+			var point = {
+				"latitude": latitude,
+				"longitude": longitude
+			}
+			polygonObject.points.push(point);
+		}
+		polygonObject.push(dangerous);
+		console.log(polygonObject);
+	}
 
     // Define the event listener to initialize Web World Wind.
     function eventWindowLoaded() {
