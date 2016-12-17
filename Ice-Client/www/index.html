@@ -54,15 +54,16 @@
 
     function publishPassableZone()
     {
-        //TODO: Tom, hook these up
-        window.alert("publishPassableZone");
+        iceLevel = 0;
+        drawPolygons();
     }
 
     function publishSevereZone()
     {
-        //TODO: Tom, hook these up
-        window.alert("publishSevereZone");
+        iceLevel = 1;
+        drawPolygons();
     }
+
     function onKeyEvent(e)
     {
         e = e || window.event;
@@ -225,7 +226,7 @@
             title: "sea_ice_concentration_11",
             version: "1.1.1",
             service: "http://nsidc.org/cgi-bin/atlas_north?",
-            layerNames: new Array("sea_ice_concentration_01"),
+            layerNames: new Array("sea_ice_concentration_02"),
             sector: new WorldWind.Sector(-90, 90, -180, 180),
             levelZeroDelta: new WorldWind.Location(36, 36),
             numLevels: 15,
@@ -305,6 +306,9 @@
 
         // Listen for mouse clicks.
         var clickRecognizer = new WorldWind.ClickRecognizer(wwd, handleClick);
+
+        // Listen for taps on mobile devices.
+        var tapRecognizer = new WorldWind.TapRecognizer(wwd, handleClick);
     }
 </script>
 </div>
