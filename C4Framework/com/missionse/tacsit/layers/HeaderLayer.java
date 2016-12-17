@@ -34,6 +34,7 @@ import gov.nasa.worldwind.view.orbit.OrbitView;
 
 public class HeaderLayer extends AnnotationLayer {
 	private WorldWindowGLJPanel wwd;
+	private ScreenRelativeAnnotation alertNote;
 	private ScreenRelativeAnnotation headerRange;
 	private ScreenRelativeAnnotation headerLatLon;
 	private ScreenRelativeAnnotation preHook;
@@ -65,7 +66,8 @@ public class HeaderLayer extends AnnotationLayer {
 		createPrimaryHook();
 		createSecondaryHook();
 		createCursorInfo();
-
+		createAlert();
+		
 		wwd = TacsitManager.getInstance().getWorldWindowJPanel();
 		wwd.addPositionListener(new PositionListener() {
 			@Override
@@ -217,6 +219,31 @@ public class HeaderLayer extends AnnotationLayer {
 
 	}
 
+	public void createAlert() {
+		AnnotationAttributes defaultAttributes = new AnnotationAttributes();
+		defaultAttributes.setBackgroundColor(new Color(0f, 0f, 0f, 0f));
+		defaultAttributes.setTextColor(Color.YELLOW);
+		defaultAttributes.setSize(new Dimension(600, 0));
+		defaultAttributes.setAdjustWidthToText(AVKey.SIZE_FIT_TEXT); // use
+																		// strict
+																		// dimension
+																		// width
+																		// - 200
+		defaultAttributes.setFont(new Font("Lucida Sans Typewriter Bold", 1, 16));
+		// defaultAttributes.setFont(new Font("Lucida Sans Typewriter",
+		// Font.BOLD, 12));
+		defaultAttributes.setTextAlign(AVKey.LEFT);
+		defaultAttributes.setBorderWidth(0);
+
+		alertNote = new ScreenRelativeAnnotation(" ", 0.5, .1);
+		alertNote.setKeepFullyVisible(true);
+		alertNote.setXMargin(5);
+		alertNote.setYMargin(20);
+		alertNote.getAttributes().setDefaults(defaultAttributes);
+		addAnnotation(alertNote);
+	}
+
+
 	public void createSecondaryHook() {
 		AnnotationAttributes defaultAttributes = new AnnotationAttributes();
 		defaultAttributes.setBackgroundColor(new Color(0f, 0f, 0f, 0f));
@@ -261,6 +288,11 @@ public class HeaderLayer extends AnnotationLayer {
 		cursorInfo.getAttributes().setDefaults(defaultAttributes);
 		this.addAnnotation(cursorInfo);
 
+	}
+
+	public void setAlertText(String str) {
+		alertNote.setText(str);
+		System.out.println("alert: " + str);
 	}
 
 	public void updateLatitudeAndLongitude() {

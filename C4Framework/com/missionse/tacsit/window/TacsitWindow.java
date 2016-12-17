@@ -8,17 +8,27 @@
  *******************************************************************************/
 package com.missionse.tacsit.window;
 
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
 import javax.swing.JPanel;
 
 import com.missionse.application.ArcticWindowManager;
+import com.missionse.tacsit.layers.HeaderLayer;
+import com.missionse.tacsit.layers.IceZoneLayer;
+import com.missionse.tacsit.layers.ShipLayer;
 
 import gov.nasa.worldwind.BasicModel;
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.awt.ViewInputAttributes;
 import gov.nasa.worldwind.awt.WorldWindowGLJPanel;
+import gov.nasa.worldwind.event.InputHandler;
+import gov.nasa.worldwind.geom.Position;
+import gov.nasa.worldwind.globes.Globe;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.ViewControlsLayer;
 import gov.nasa.worldwind.layers.ViewControlsSelectListener;
+import gov.nasa.worldwind.terrain.HighResolutionTerrain;
 import gov.nasa.worldwind.view.orbit.OrbitView;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingNode;
@@ -66,6 +76,23 @@ public class TacsitWindow {
 		if (null != viewControls) {
 			this.wwd.addSelectListener(new ViewControlsSelectListener(this.wwd, viewControls));
 		}
+		
+		ShipLayer ship_layer = (ShipLayer) this.wwd.getModel().getLayers()
+				.getLayerByName("Ship Layer");
+		InputHandler ih = wwd.getInputHandler();
+		if (null != ih)
+		{
+			ih.addKeyListener(ship_layer.getKeyListener(wwd));
+		}
+		
+		IceZoneLayer ice_layer = (IceZoneLayer) this.wwd.getModel().getLayers()
+				.getLayerByName("Ice Zone Layer");
+		ice_layer.setGlobe(wwd.getModel().getGlobe());
+		ship_layer.setIceLayer(ice_layer);
+		HeaderLayer header_layer = (HeaderLayer) this.wwd.getModel().getLayers()
+				.getLayerByName("Header Layer");
+		ship_layer.setHeaderLayer(header_layer);
+
 	}
 
 	// public JDesktopPane getDesktop() {
@@ -84,22 +111,22 @@ public class TacsitWindow {
 		TacsitWindow.conferencePanel = conferencePanel;
 	}
 
-	public static void main(String[] args) {
-		if (Configuration.isMacOS()) {
-			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Hello World Wind");
-		}
-
-		java.awt.EventQueue.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				System.out.println("START TACIT");
-
-				// Create an AppFrame and immediately make it visible. As per
-				// Swing convention, this
-				// is done within an invokeLater call so that it executes on an
-				// AWT thread.
-				new TacsitWindow();
-			}
-		});
-	}
+//	public static void main(String[] args) {
+//		if (Configuration.isMacOS()) {
+//			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Hello World Wind");
+//		}
+//
+//		java.awt.EventQueue.invokeLater(new Runnable() {
+//			@Override
+//			public void run() {
+//				System.out.println("START TACIT");
+//
+//				// Create an AppFrame and immediately make it visible. As per
+//				// Swing convention, this
+//				// is done within an invokeLater call so that it executes on an
+//				// AWT thread.
+//				new TacsitWindow();
+//			}
+//		});
+//	}
 }
