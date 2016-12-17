@@ -29,8 +29,29 @@
     </canvas>
 </div>
 <script>
-    // Register an event listener to be called when the page is loaded.
+// Register an event listener to be called when the page is loaded.
     window.addEventListener("load", eventWindowLoaded, false);
+
+    window.addEventListener("keypress", onKeyEvent, false);
+    var points = new Array(); // Used to store polygon points
+    var polygons = new Array(); // Used to store full polygons
+
+    function onKeyEvent(e)
+    {
+        e = e || window.event;
+
+        window.alert(e.keyCode);
+    }
+
+    function drawPolygons()
+    {
+
+    }
+
+    function exportPolygons()
+    {
+        
+    }
 
     // Define the event listener to initialize Web World Wind.
     function eventWindowLoaded() {
@@ -45,6 +66,93 @@
         wwd.addLayer(new WorldWind.CompassLayer());
         wwd.addLayer(new WorldWind.CoordinatesDisplayLayer(wwd));
         wwd.addLayer(new WorldWind.ViewControlsLayer(wwd));
+        placemarkLayer = new WorldWind.RenderableLayer("Placemarks")
+
+        // List<Position> positions = Arrays.asList(
+        // Position.fromDegrees(50, -180, 1e5),
+        // Position.fromDegrees(30, -100, 1e6),
+        // Position.fromDegrees(50, -40, 1e5)
+        // );
+        // Path path = new Path(positions);
+        // layer.addRenderable(path);
+        //window.alert(5+6);
+
+        // The common gesture-handling function.
+        var handleClick = function (recognizer) {
+            // Obtain the event location.
+            var x = recognizer.clientX,
+            y = recognizer.clientY;
+
+            // Perform the pick. Must first convert from window coordinates to canvas coordinates, which are
+            // relative to the upper left corner of the canvas rather than the upper left corner of the page.
+            var pickList = wwd.pick(wwd.canvasCoordinates(x, y));
+
+            // If only one thing is picked and it is the terrain, tell the world window to go to the picked location.
+            if (pickList.objects.length == 1 && pickList.objects[0].isTerrain) {
+                var position = pickList.objects[0].position;
+                wwd.goTo(new WorldWind.Location(position.latitude, position.longitude));
+            }
+
+                var position = pickList.objects[0].position;
+                var placemark,
+                placemarkAttributes = new WorldWind.PlacemarkAttributes(null),
+                highlightAttributes,
+                placemarkLayer = new WorldWind.RenderableLayer("Placemarks");
+                points.push(position);
+
+                // Set up the common placemark attributes.
+                placemarkAttributes.imageScale = 1;
+                placemarkAttributes.imageOffset = new WorldWind.Offset(
+            WorldWind.OFFSET_FRACTION, 0.5,
+            WorldWind.OFFSET_FRACTION, 0.5);
+        placemarkAttributes.imageColor = WorldWind.Color.WHITE;
+
+        // Create the custom image for the placemark.
+
+        var canvas = document.createElement("canvas"),
+        ctx2d = canvas.getContext("2d"),
+        size = 64, c = size / 2  - 0.5, innerRadius = 5, outerRadius = 8;
+
+        canvas.width = size;
+        canvas.height = size;
+
+        var gradient = ctx2d.createRadialGradient(c, c, innerRadius, c, c, outerRadius);
+        gradient.addColorStop(0, 'rgb(255, 0, 0)');
+        gradient.addColorStop(0.5, 'rgb(0, 255, 0)');
+        gradient.addColorStop(1, 'rgb(255, 0, 0)');
+
+        ctx2d.fillStyle = gradient;
+        ctx2d.arc(c, c, outerRadius, 0, 2 * Math.PI, false);
+        ctx2d.fill();
+
+        // Create the placemark.
+        placemark = new WorldWind.Placemark(new WorldWind.Position(position.latitude, position.longitude, 1e2), false, null);
+        placemark.altitudeMode = WorldWind.RELATIVE_TO_GROUND;
+
+        // Create the placemark attributes for the placemark.
+        placemarkAttributes = new WorldWind.PlacemarkAttributes(placemarkAttributes);
+        // Wrap the canvas created above in an ImageSource object to specify it as the placemark image source.
+        placemarkAttributes.imageSource = new WorldWind.ImageSource(canvas);
+        placemark.attributes = placemarkAttributes;
+
+        // Create the highlight attributes for this placemark. Note that the normal attributes are specified as
+        // the default highlight attributes so that all properties are identical except the image scale. You could
+        // instead vary the color, image, or other property to control the highlight representation.
+        highlightAttributes = new WorldWind.PlacemarkAttributes(placemarkAttributes);
+        highlightAttributes.imageScale = 1.2;
+        placemark.highlightAttributes = highlightAttributes;
+
+        // Add the placemark to the layer.
+        placemarkLayer.addRenderable(placemark);
+
+        // Add the placemarks layer to the World Window's layer list.
+        wwd.addLayer(placemarkLayer);
+    };
+
+        // Listen for mouse clicks.
+        var clickRecognizer = new WorldWind.ClickRecognizer(wwd, handleClick);
+
+
     }
 </script>
 </div>
