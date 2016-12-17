@@ -29,53 +29,154 @@
     </canvas>
 </div>
 <script>
-// Register an event listener to be called when the page is loaded.
+    // Create a World Window for the canvas.
+    var wwd = new WorldWind.WorldWindow("canvasOne");
+
+    // Register an event listener to be called when the page is loaded.
     window.addEventListener("load", eventWindowLoaded, false);
 
     window.addEventListener("keypress", onKeyEvent, false);
+    var iceLevel = 0; // 0 is Passable. 1 is Unpassable.
     var points = new Array(); // Used to store polygon points
     var polygons = new Array(); // Used to store full polygons
+    var placemarkLayer = new WorldWind.RenderableLayer("Placemarks");
+    wwd.addLayer(placemarkLayer);
+    var polygonsLayer = new WorldWind.RenderableLayer();
+    polygonsLayer.displayName = "Polygons";
+    wwd.addLayer(polygonsLayer);
+
+    //TODO
+
 
     function onKeyEvent(e)
     {
         e = e || window.event;
 
-        window.alert(e.keyCode);
+        if (e.keyCode == "112")
+        {
+            drawPolygons();
+        }
+        else if (e.keyCode == "99")
+        {
+            exportPolygons();
+        }
+        else if (e.keyCode == "105")
+        {
+            toggleIceLevel();
+        }
+    }
+
+    function toggleIceLevel()
+    {
+        if (iceLevel == 0)
+        {
+            iceLevel = 1;
+            window.alert("All new ice polygons will be of type 'Unpassable'.");
+        }
+        else
+        {
+            iceLevel = 0;
+            window.alert("All new ice polygons will be of type 'Passable'.");
+        }
     }
 
     function drawPolygons()
     {
+        if (points.length < 3) // Not enough points to draw a valid polygon
+        {
+            window.alert('Please enter at least three points.');
+        }
+        else // We have enough points to draw a polygon
+        {
+            // Create a new polygon
+            var boundaries = [];
+            boundaries[0] = [];
+            for (var i = 0; i < points.length; i++)
+            {
+                boundaries[0].push(new WorldWind.Position(points[i].latitude,
+                     points[i].longitude, 1e5));
+            }
 
+            var polygon = new WorldWind.Polygon(boundaries, null);
+            polygon.altitudeMode = WorldWind.ABSOLUTE;
+            polygon.extrude = true; // extrude the polygon edges to the ground
+
+            var polygonAttributes = new WorldWind.ShapeAttributes(null);
+            polygonAttributes.drawInterior = true;
+            polygonAttributes.drawOutline = true;
+
+            // Change color based on ice level setting
+            if (iceLevel == 0)
+            {
+                polygonAttributes.outlineColor = WorldWind.Color.YELLOW;
+                polygonAttributes.interiorColor = new WorldWind.Color(1, 1, 0, 0.5);
+            }
+            else
+            {
+                polygonAttributes.outlineColor = WorldWind.Color.RED;
+                polygonAttributes.interiorColor = new WorldWind.Color(1, 0, 0, 0.5);
+            }
+
+            polygonAttributes.drawVerticals = polygon.extrude;
+            polygonAttributes.applyLighting = true;
+            polygon.attributes = polygonAttributes;
+
+            // Create and assign the polygon's highlight attributes.
+            var highlightAttributes = new WorldWind.ShapeAttributes(polygonAttributes);
+            highlightAttributes.outlineColor = WorldWind.Color.RED;
+            highlightAttributes.interiorColor = new WorldWind.Color(1, 1, 1, 0.5);
+            polygon.highlightAttributes = highlightAttributes;
+
+            // Add the polygon to the layer and the layer to the World Window's layer list.
+            polygonsLayer.addRenderable(polygon);
+
+            // Add polygon to array
+            polygons.push(polygon);
+
+            // Clear points array and points from layer
+            points = [];
+        }
     }
 
     function exportPolygons()
     {
-        
+        if (points.length != 0)
+        {
+            window.alert("You are still drawing a polygon. Finish it before exporting.");
+        }
+        else if (polygons.length == 0)
+        {
+            window.alert("You must enter at least one shape before exporting.");
+        }
+        else
+        {
+            window.alert("We are ready for export.");
+        }
     }
 
     // Define the event listener to initialize Web World Wind.
     function eventWindowLoaded() {
-        // Create a World Window for the canvas.
-        var wwd = new WorldWind.WorldWindow("canvasOne");
 
         // Add some image layers to the World Window's globe.
-        wwd.addLayer(new WorldWind.BMNGOneImageLayer());
+        //wwd.addLayer(new WorldWind.BMNGOneImageLayer());
         wwd.addLayer(new WorldWind.BingAerialWithLabelsLayer());
 
         // Add a compass, a coordinates display and some view controls to the World Window.
-        wwd.addLayer(new WorldWind.CompassLayer());
-        wwd.addLayer(new WorldWind.CoordinatesDisplayLayer(wwd));
+        //wwd.addLayer(new WorldWind.CompassLayer());
+        //wwd.addLayer(new WorldWind.CoordinatesDisplayLayer(wwd));
+        var config = {
+            title: "Active Fires",
+            version: "1.1.1",
+            service: "http://neowms.sci.gsfc.nasa.gov/wms/wms?",
+            layerNames: "MOD14A1_M_FIRE",
+            sector: new WorldWind.Sector(-90, 90, -180, 180),
+            levelZeroDelta: new WorldWind.Location(36, 36),
+            numLevels: 15,
+            format: "image/png",
+            size: 256
+        };
+        wwd.addLayer(new WorldWind.WmsLayer(config, null));
         wwd.addLayer(new WorldWind.ViewControlsLayer(wwd));
-        placemarkLayer = new WorldWind.RenderableLayer("Placemarks")
-
-        // List<Position> positions = Arrays.asList(
-        // Position.fromDegrees(50, -180, 1e5),
-        // Position.fromDegrees(30, -100, 1e6),
-        // Position.fromDegrees(50, -40, 1e5)
-        // );
-        // Path path = new Path(positions);
-        // layer.addRenderable(path);
-        //window.alert(5+6);
 
         // The common gesture-handling function.
         var handleClick = function (recognizer) {
@@ -96,63 +197,57 @@
                 var position = pickList.objects[0].position;
                 var placemark,
                 placemarkAttributes = new WorldWind.PlacemarkAttributes(null),
-                highlightAttributes,
-                placemarkLayer = new WorldWind.RenderableLayer("Placemarks");
+                highlightAttributes;
                 points.push(position);
 
                 // Set up the common placemark attributes.
                 placemarkAttributes.imageScale = 1;
                 placemarkAttributes.imageOffset = new WorldWind.Offset(
-            WorldWind.OFFSET_FRACTION, 0.5,
-            WorldWind.OFFSET_FRACTION, 0.5);
-        placemarkAttributes.imageColor = WorldWind.Color.WHITE;
+                WorldWind.OFFSET_FRACTION, 0.5,
+                WorldWind.OFFSET_FRACTION, 0.5);
+                placemarkAttributes.imageColor = WorldWind.Color.WHITE;
 
-        // Create the custom image for the placemark.
+                // Create the custom image for the placemark.
 
-        var canvas = document.createElement("canvas"),
-        ctx2d = canvas.getContext("2d"),
-        size = 64, c = size / 2  - 0.5, innerRadius = 5, outerRadius = 8;
+                var canvas = document.createElement("canvas"),
+                ctx2d = canvas.getContext("2d"),
+                size = 64, c = size / 2  - 0.5, innerRadius = 5, outerRadius = 8;
 
-        canvas.width = size;
-        canvas.height = size;
+                canvas.width = size;
+                canvas.height = size;
 
-        var gradient = ctx2d.createRadialGradient(c, c, innerRadius, c, c, outerRadius);
-        gradient.addColorStop(0, 'rgb(255, 0, 0)');
-        gradient.addColorStop(0.5, 'rgb(0, 255, 0)');
-        gradient.addColorStop(1, 'rgb(255, 0, 0)');
+                var gradient = ctx2d.createRadialGradient(c, c, innerRadius, c, c, outerRadius);
+                gradient.addColorStop(0, 'rgb(255, 0, 0)');
+                gradient.addColorStop(0.5, 'rgb(0, 255, 0)');
+                gradient.addColorStop(1, 'rgb(255, 0, 0)');
 
-        ctx2d.fillStyle = gradient;
-        ctx2d.arc(c, c, outerRadius, 0, 2 * Math.PI, false);
-        ctx2d.fill();
+                ctx2d.fillStyle = gradient;
+                ctx2d.arc(c, c, outerRadius, 0, 2 * Math.PI, false);
+                ctx2d.fill();
 
-        // Create the placemark.
-        placemark = new WorldWind.Placemark(new WorldWind.Position(position.latitude, position.longitude, 1e2), false, null);
-        placemark.altitudeMode = WorldWind.RELATIVE_TO_GROUND;
+                // Create the placemark.
+                placemark = new WorldWind.Placemark(new WorldWind.Position(position.latitude, position.longitude, 1e2), false, null);
+                placemark.altitudeMode = WorldWind.RELATIVE_TO_GROUND;
 
-        // Create the placemark attributes for the placemark.
-        placemarkAttributes = new WorldWind.PlacemarkAttributes(placemarkAttributes);
-        // Wrap the canvas created above in an ImageSource object to specify it as the placemark image source.
-        placemarkAttributes.imageSource = new WorldWind.ImageSource(canvas);
-        placemark.attributes = placemarkAttributes;
+                // Create the placemark attributes for the placemark.
+                placemarkAttributes = new WorldWind.PlacemarkAttributes(placemarkAttributes);
+                // Wrap the canvas created above in an ImageSource object to specify it as the placemark image source.
+                placemarkAttributes.imageSource = new WorldWind.ImageSource(canvas);
+                placemark.attributes = placemarkAttributes;
 
-        // Create the highlight attributes for this placemark. Note that the normal attributes are specified as
-        // the default highlight attributes so that all properties are identical except the image scale. You could
-        // instead vary the color, image, or other property to control the highlight representation.
-        highlightAttributes = new WorldWind.PlacemarkAttributes(placemarkAttributes);
-        highlightAttributes.imageScale = 1.2;
-        placemark.highlightAttributes = highlightAttributes;
+                // Create the highlight attributes for this placemark. Note that the normal attributes are specified as
+                // the default highlight attributes so that all properties are identical except the image scale. You could
+                // instead vary the color, image, or other property to control the highlight representation.
+                highlightAttributes = new WorldWind.PlacemarkAttributes(placemarkAttributes);
+                highlightAttributes.imageScale = 1.2;
+                placemark.highlightAttributes = highlightAttributes;
 
-        // Add the placemark to the layer.
-        placemarkLayer.addRenderable(placemark);
-
-        // Add the placemarks layer to the World Window's layer list.
-        wwd.addLayer(placemarkLayer);
-    };
+                // Add the placemark to the layer.
+                placemarkLayer.addRenderable(placemark);
+        };
 
         // Listen for mouse clicks.
         var clickRecognizer = new WorldWind.ClickRecognizer(wwd, handleClick);
-
-
     }
 </script>
 </div>
