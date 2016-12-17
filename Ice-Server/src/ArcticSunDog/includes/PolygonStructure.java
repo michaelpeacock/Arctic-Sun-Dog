@@ -2,8 +2,8 @@ package ArcticSunDog.includes;
 
 import java.util.ArrayList;
 
-public class ArcticSunDogPolyonStructure {
-	private boolean is_severe;
+public class PolygonStructure {
+	public boolean is_severe;
 
 	private class MyPoint
 	{
@@ -19,7 +19,7 @@ public class ArcticSunDogPolyonStructure {
 	
 	private ArrayList<MyPoint> points;
 	
-	private ArcticSunDogPolyonStructure() {
+	public PolygonStructure() {
 		is_severe = true;
 		points = new ArrayList<MyPoint>();
 	}

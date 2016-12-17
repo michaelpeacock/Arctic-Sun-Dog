@@ -1,5 +1,15 @@
-{"employees":[
-    {"firstName":"John", "lastName":"Doe"},
-    {"firstName":"Anna", "lastName":"Smith"},
-    {"firstName":"Peter", "lastName":"Jones"}
-]}
+{
+	"latlon": [{
+		"latitude": 45.99590279229142,
+		"longitude": -110.10329849667617
+	}, {
+		"latitude": 59.064639899551345,
+		"longitude": -102.1709385396433
+	}, {
+		"latitude": 51.742552088279155,
+		"longitude": -92.32716464535494
+	}],
+	"dangerous": {
+		"dangerous": true
+	}
+}
