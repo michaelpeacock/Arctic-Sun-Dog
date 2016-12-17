@@ -7,14 +7,14 @@ public class PolygonStructure {
 
 	public class MyPoint
 	{
+		public double lat;
+		public double lon;
+		
 		MyPoint(double arg0, double arg1)
 		{
 			lat = arg0;
 			lon = arg1;
 		}
-		
-		double lat;
-		double lon;
 	};
 	
 	private ArrayList<MyPoint> points;
