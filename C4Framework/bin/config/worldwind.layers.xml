@@ -18,6 +18,8 @@
     <Layer href="config/Earth/BMNGWMSLayer2.xml" actuate="onLoad"/> 
     <Layer className="com.missionse.tacsit.layers.WaterLayer"/>
     <Layer className="com.missionse.tacsit.layers.LandLayer"/>
+    <Layer className="com.missionse.tacsit.layers.IceZoneLayer"/>
+    <Layer className="com.missionse.tacsit.layers.ShipLayer"/>
     <!--<Layer className="com.missionse.tacsit.layers.WorldBorders"/> -->
     <Layer className="com.missionse.tacsit.layers.HeaderLayer"/>
 </LayerList>
