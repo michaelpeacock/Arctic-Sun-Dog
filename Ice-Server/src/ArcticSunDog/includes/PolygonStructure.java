@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class PolygonStructure {
 	public boolean is_severe;
 
-	private class MyPoint
+	public class MyPoint
 	{
 		MyPoint(double arg0, double arg1)
 		{
