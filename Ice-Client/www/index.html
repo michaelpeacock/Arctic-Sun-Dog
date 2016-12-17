@@ -1,3 +1,4 @@
+<?php header("Access-Control-Allow-Origin: http://nsidc.org"); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +14,7 @@
 <nav class="navbar navbar-inverse">
   <div class="container-fluid">
     <div class="navbar-header">
-      <a class="navbar-brand" href="#">Arctic Snow Dog</a>
+      <a class="navbar-brand" href="#">Arctic Sun Dog</a>
     </div>
     <ul class="nav navbar-nav">
       <li onclick="publishSevereZone()"><a href="#">Publish Severe Ice Zone</a></li>
@@ -222,11 +223,12 @@
         // Add a compass, a coordinates display and some view controls to the World Window.
         //wwd.addLayer(new WorldWind.CompassLayer());
         //wwd.addLayer(new WorldWind.CoordinatesDisplayLayer(wwd));
+
         var config = {
             title: "sea_ice_concentration_11",
             version: "1.1.1",
             service: "http://nsidc.org/cgi-bin/atlas_north?",
-            layerNames: new Array("sea_ice_concentration_02"),
+            layerNames: new Array("sea_ice_concentration_04"),
             sector: new WorldWind.Sector(-90, 90, -180, 180),
             levelZeroDelta: new WorldWind.Location(36, 36),
             numLevels: 15,
@@ -249,7 +251,6 @@
             // If only one thing is picked and it is the terrain, tell the world window to go to the picked location.
             if (pickList.objects.length == 1 && pickList.objects[0].isTerrain) {
                 var position = pickList.objects[0].position;
-                wwd.goTo(new WorldWind.Location(position.latitude, position.longitude));
             }
 
                 var position = pickList.objects[0].position;
