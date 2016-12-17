@@ -5,16 +5,16 @@ import java.util.ArrayList;
 public class PolygonStructure {
 	public boolean is_severe;
 
-	private class MyPoint
+	public class MyPoint
 	{
+		public double lat;
+		public double lon;
+		
 		MyPoint(double arg0, double arg1)
 		{
 			lat = arg0;
 			lon = arg1;
 		}
-		
-		double lat;
-		double lon;
 	};
 	
 	private ArrayList<MyPoint> points;
